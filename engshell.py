@@ -10,6 +10,7 @@ import subprocess
 import io
 import contextlib
 import platform
+import datetime
 
 WINDOWS = platform.system() == "Windows"
 openai.api_key = OPENAI_KEY
@@ -97,11 +98,20 @@ def containerize_code(code_string):
     code_printout = output_buffer.getvalue()
     return True, code_printout
 
-def run_python(goal, debug = False, showcode = False):
+def run_python(goal, debug = False, showcode = False, savecode = False):
     print_status("compiling...")
     returned_code = LLM(goal, mode='code')
     if showcode: 
         print(returned_code, end = '' if returned_code[-1] == '\n' else '\n')
+    if savecode:
+        folder_path = os.path.join(os.getcwd(), 'scripts')
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        file_path = os.path.join(folder_path, datetime.datetime.now().strftime('%Y%m%d-%H%M%S') + ".py")
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        with open(file_path, 'w') as f:
+            f.write(returned_code)
     print_status("running...")
     success, output = containerize_code(returned_code)
     attempts = 0
@@ -155,14 +165,16 @@ if __name__ == "__main__":
         if '--llm' in user_input: user_input += CONGNITIVE_USER_MESSAGE
         debug = '--debug' in user_input
         showcode = '--showcode' in user_input
+        savecode = '--savecode' in user_input
         user_input = user_input.replace('--llm','')
         user_input = user_input.replace('--debug','')
         user_input = user_input.replace('--showcode','')
+        user_input = user_input.replace('--savecode','')
         user_prompt = USER_MESSAGE(user_input)
         run_code = True
         while run_code:
             try:
-                console_output, returned_code = run_python(user_prompt, debug, showcode)
+                console_output, returned_code = run_python(user_prompt, debug, showcode, savecode)
                 #if len(console_output) > MAX_PROMPT:
                 #    print_status('output too large, summarizing...')
                 #    console_output = summarize(console_output)

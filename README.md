@@ -14,6 +14,7 @@ https://user-images.githubusercontent.com/11333708/229642800-8441789e-1af4-4e47-
 - `--llm` encourages LLM queries from within the code execution.
 - `--debug` allows engshell to debug its own code if it fails.
 - `--showcode` shows the code being executed.
+- `--savecode` saves the code that gets executed in the scripts subdirectory of the CWD.
 - `clear` resets engshell's memory, along with the console.
 
 ## Examples
